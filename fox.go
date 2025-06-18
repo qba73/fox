@@ -100,14 +100,14 @@ func (em *EnergyMeter) get(ctx context.Context, url string, data any) error {
 // on a local network and returns current statistics or an error.
 //
 // It uses default Energy Meter client and default HTTP Client.
-func GetEnergyStats(IP string) (EnergyMeterStats, error) {
-	return NewEnergyMeter("http://" + IP).CurrentParameters()
+func GetEnergyStats(ip string) (EnergyMeterStats, error) {
+	return NewEnergyMeter("http://" + ip).CurrentParameters()
 }
 
 // GetEnergyTotal takes a string representing Meter's IP address
 // on a local network and returns total energy reading or an error.
 //
 // It uses default Energy Meter client and default HTTP Client.
-func GetEnergyTotal(IP string) (EnergyTotal, error) {
-	return NewEnergyMeter("http://" + IP).Total()
+func GetEnergyTotal(ip string) (EnergyTotal, error) {
+	return NewEnergyMeter("http://" + ip).Total()
 }
