@@ -8,16 +8,26 @@ import (
 	"net/http"
 )
 
-// EnergyMeterStats represents current data recorded
-// by the Energy Meter
+// EnergyMeterStats represents current data
+// recorded by the Energy Meter
 type EnergyMeterStats struct {
-	Status        string
-	Voltage       string
-	Current       string
-	PowerActive   string
-	PowerReactive string
-	Frequency     string
-	PowerFactor   string
+	Status        string `json:"status"`
+	Voltage       string `json:"voltage"`
+	Current       string `json:"current"`
+	PowerActive   string `json:"power_active"`
+	PowerReactive string `json:"power_reactive"`
+	Frequency     string `json:"frequency"`
+	PowerFactor   string `json:"power_factor"`
+}
+
+// EnergyTotal represents cumulative energy
+// recorded by the meter.
+type EnergyTotal struct {
+	Status               string `json:"status"`
+	ActiveEnergy         string `json:"active_energy"`
+	ReactiveEnergy       string `json:"reactive_energy"`
+	ActiveEnergyImport   string `json:"active_energy_import"`
+	ReactiveEnergyImport string `json:"reactive_energy_import"`
 }
 
 // EnergyMeter represents a Client for Fox EnergyMeter.
@@ -42,13 +52,22 @@ func NewEnergyMeter(baseURL string) *EnergyMeter {
 }
 
 // CurrentParams returns current Meter Status or error.
-func (em *EnergyMeter) CurrentParams() (EnergyMeterStats, error) {
+func (em *EnergyMeter) CurrentParameters() (EnergyMeterStats, error) {
 	url := fmt.Sprintf("%s/%s/get_current_parameters", em.BaseURL, em.APIKey)
 	var e EnergyMeterStats
 	if err := em.get(context.Background(), url, &e); err != nil {
 		return EnergyMeterStats{}, err
 	}
 	return e, nil
+}
+
+func (em *EnergyMeter) Total() (EnergyTotal, error) {
+	url := fmt.Sprintf("%s/%s/get_total_energy", em.BaseURL, em.APIKey)
+	var et EnergyTotal
+	if err := em.get(context.Background(), url, &et); err != nil {
+		return EnergyTotal{}, err
+	}
+	return et, nil
 }
 
 func (em *EnergyMeter) get(ctx context.Context, url string, data any) error {
@@ -77,10 +96,18 @@ func (em *EnergyMeter) get(ctx context.Context, url string, data any) error {
 	return nil
 }
 
-// EnergyStats takes a string representing Meter's IP address
-// on a local network and returns current statistics or error.
+// GetEnergyStats takes a string representing Meter's IP address
+// on a local network and returns current statistics or an error.
 //
 // It uses default Energy Meter client and default HTTP Client.
-func EnergyStats(IP string) (EnergyMeterStats, error) {
-	return NewEnergyMeter("http://" + IP).CurrentParams()
+func GetEnergyStats(IP string) (EnergyMeterStats, error) {
+	return NewEnergyMeter("http://" + IP).CurrentParameters()
+}
+
+// GetEnergyTotal takes a string representing Meter's IP address
+// on a local network and returns total energy reading or an error.
+//
+// It uses default Energy Meter client and default HTTP Client.
+func GetEnergyTotal(IP string) (EnergyTotal, error) {
+	return NewEnergyMeter("http://" + IP).Total()
 }

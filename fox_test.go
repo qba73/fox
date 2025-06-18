@@ -10,7 +10,7 @@ import (
 	"github.com/qba73/fox"
 )
 
-func TestEnergyMeterWithNoAPIKeySendsCurrentWorkingParameters(t *testing.T) {
+func TestEnergyMeterWithNoAPIKeyReadsCurrentWorkingParameters(t *testing.T) {
 	t.Parallel()
 
 	wantPath := "/00/get_current_parameters"
@@ -21,14 +21,14 @@ func TestEnergyMeterWithNoAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 		}
 		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(respBodyEnergy))
+		w.Write([]byte(respBodyCurrentParameters))
 	}))
 	defer ts.Close()
 
 	em := fox.NewEnergyMeter(ts.URL)
 	em.HTTPClient = ts.Client()
 
-	got, err := em.CurrentParams()
+	got, err := em.CurrentParameters()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,10 +37,10 @@ func TestEnergyMeterWithNoAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 		Status:        "ok",
 		Voltage:       "247.3",
 		Current:       "0.00",
-		PowerActive:   "",
-		PowerReactive: "",
+		PowerActive:   "0.0",
+		PowerReactive: "0.0",
 		Frequency:     "50.18",
-		PowerFactor:   "",
+		PowerFactor:   "1.00",
 	}
 
 	if !cmp.Equal(want, got) {
@@ -49,7 +49,7 @@ func TestEnergyMeterWithNoAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 
 }
 
-func TestEnergyMeterWithAPIKeySendsCurrentWorkingParameters(t *testing.T) {
+func TestEnergyMeterWithAPIKeyReadsCurrentWorkingParameters(t *testing.T) {
 	t.Parallel()
 
 	energyMeterAPIKey := "DS123QWES12"
@@ -61,7 +61,7 @@ func TestEnergyMeterWithAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 		}
 		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(respBodyEnergy))
+		w.Write([]byte(respBodyCurrentParameters))
 	}))
 	defer ts.Close()
 
@@ -69,7 +69,7 @@ func TestEnergyMeterWithAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 	em.HTTPClient = ts.Client()
 	em.APIKey = energyMeterAPIKey
 
-	got, err := em.CurrentParams()
+	got, err := em.CurrentParameters()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,10 +78,10 @@ func TestEnergyMeterWithAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 		Status:        "ok",
 		Voltage:       "247.3",
 		Current:       "0.00",
-		PowerActive:   "",
-		PowerReactive: "",
+		PowerActive:   "0.0",
+		PowerReactive: "0.0",
 		Frequency:     "50.18",
-		PowerFactor:   "",
+		PowerFactor:   "1.00",
 	}
 
 	if !cmp.Equal(want, got) {
@@ -90,7 +90,82 @@ func TestEnergyMeterWithAPIKeySendsCurrentWorkingParameters(t *testing.T) {
 
 }
 
-var respBodyEnergy = `{
+func TestEnergyMeterWithNoAPIKeyReadsTotalEnergy(t *testing.T) {
+	t.Parallel()
+
+	wantPath := "/00/get_total_energy"
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != wantPath {
+			t.Errorf("invalid path:\n%s\n", cmp.Diff(wantPath, r.URL.Path))
+		}
+		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(respBodyEnergyTotal))
+	}))
+	defer ts.Close()
+
+	em := fox.NewEnergyMeter(ts.URL)
+	em.HTTPClient = ts.Client()
+
+	got, err := em.Total()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := fox.EnergyTotal{
+		Status:               "ok",
+		ActiveEnergy:         "000",
+		ReactiveEnergy:       "000",
+		ActiveEnergyImport:   "000",
+		ReactiveEnergyImport: "000",
+	}
+
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestEnergyMeterWithAPIKeyReadsTotalEnergy(t *testing.T) {
+	t.Parallel()
+
+	energyMeterAPIKey := "DS123QWES12"
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wantPath := fmt.Sprintf("/%s/get_total_energy", energyMeterAPIKey)
+		if r.URL.Path != wantPath {
+			t.Errorf("invalid path:\n%s\n", cmp.Diff(wantPath, r.URL.Path))
+		}
+		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(respBodyEnergyTotal))
+	}))
+	defer ts.Close()
+
+	em := fox.NewEnergyMeter(ts.URL)
+	em.HTTPClient = ts.Client()
+	em.APIKey = energyMeterAPIKey
+
+	got, err := em.Total()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := fox.EnergyTotal{
+		Status:               "ok",
+		ActiveEnergy:         "000",
+		ReactiveEnergy:       "000",
+		ActiveEnergyImport:   "000",
+		ReactiveEnergyImport: "000",
+	}
+
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+var (
+	respBodyCurrentParameters = `{
 	"status":"ok",
 	"voltage":"247.3",
 	"current":"0.00",
@@ -99,3 +174,12 @@ var respBodyEnergy = `{
 	"frequency":"50.18",
 	"power_factor":"1.00"
 }`
+
+	respBodyEnergyTotal = `{
+	"status":"ok",
+	"active_energy":"000",
+	"reactive_energy":"000",
+	"active_energy_import":"000",
+	"reactive_energy_import":"000"
+}`
+)
