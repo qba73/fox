@@ -1,6 +1,7 @@
 [![Tests](https://github.com/qba73/fox/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/qba73/fox/actions/workflows/test.yml)
 ![GitHub](https://img.shields.io/github/license/qba73/fox)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/qba73/fox)
+[![CodeQL](https://github.com/qba73/fox/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/qba73/fox/actions/workflows/github-code-scanning/codeql)
 
 # fox
 
