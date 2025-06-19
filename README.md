@@ -7,7 +7,7 @@
 
 # fox
 
-`fox` is a Go SDK for [Fox Home Automation System](https://www.fif.com.pl/en/72-fox-wi-fi-control) manufactured by the [F&F Company](https://www.fif.com.pl/en/).
+`fox` is a Go SDK for [Fox Home Automation System](https://www.fif.com.pl/en/72-fox-wi-fi-control) manufactured by [F&F Filipowski Sp. j.](https://www.fif.com.pl/en/)
 
 The SDK allows to manage devices such as:
 
