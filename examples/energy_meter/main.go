@@ -7,32 +7,22 @@ import (
 )
 
 func main() {
-	// =========================================================
-	// Example for devices with configured API Key
-	// =========================================================
+	// Create FOX Client
 
-	energyMeter := fox.NewEnergyMeter("http://192.168.50.122")
-	energyMeter.APIKey = "f01333d9c779eaec58be22c6a6"
+	fc := fox.NewClient()
 
-	cp, err := energyMeter.CurrentParameters()
+	// Example: Read Energy Meter Stats
+
+	status, err := fc.EnergyMeterCurrentStatus("http://192.168.50.122")
 	if err != nil {
 		// handle error
 	}
-	fmt.Printf("%+v\n", cp)
+	fmt.Printf("%+v\n", status)
 	// {Status:ok Voltage:245.6 Current:0.00 PowerActive:0.0 PowerReactive:0.0 Frequency:50.04 PowerFactor:1.00}
 
-	// =========================================================
-	// Example for devices without configured API Key
-	// =========================================================
+	// Example: Read Energy Total
 
-	energy, err := fox.GetEnergyStats("192.168.50.122")
-	if err != nil {
-		// handle error
-	}
-	fmt.Printf("%+v\n", energy)
-	// {Status:ok Voltage:240.8 Current:0.00 PowerActive:0.0 PowerReactive:0.0 Frequency:50.12 PowerFactor:1.00}
-
-	total, err := fox.GetEnergyTotal("192.168.50.122")
+	total, err := fc.EnergyMeterTotal("http://192.168.50.122")
 	if err != nil {
 		// handle error
 	}

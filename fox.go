@@ -32,11 +32,10 @@ type EnergyTotal struct {
 
 // EnergyMeter represents a Client for Fox EnergyMeter.
 type EnergyMeter struct {
-	Name       string
-	IP         string
-	BaseURL    string
-	APIKey     string
-	HTTPClient *http.Client
+	Name    string
+	IP      string
+	BaseURL string
+	APIKey  string
 }
 
 // NewEnergyMeter creates a client for Fox Energy Meter.
@@ -44,38 +43,46 @@ type EnergyMeter struct {
 // in the local network.
 func NewEnergyMeter(baseURL string) *EnergyMeter {
 	em := EnergyMeter{
-		BaseURL:    baseURL,
-		APIKey:     "00",
-		HTTPClient: http.DefaultClient,
+		BaseURL: baseURL,
+		APIKey:  "00",
 	}
 	return &em
 }
 
-// CurrentParams returns current Meter Status or error.
-func (em *EnergyMeter) CurrentParameters() (EnergyMeterStats, error) {
-	url := fmt.Sprintf("%s/%s/get_current_parameters", em.BaseURL, em.APIKey)
+type Client struct {
+	HTTPClient *http.Client
+}
+
+func NewClient() *Client {
+	return &Client{
+		HTTPClient: http.DefaultClient,
+	}
+}
+
+func (c *Client) EnergyMeterCurrentStatus(baseURL string) (EnergyMeterStats, error) {
+	url := fmt.Sprintf("%s/00/get_current_parameters", baseURL)
 	var e EnergyMeterStats
-	if err := em.get(context.Background(), url, &e); err != nil {
+	if err := c.get(context.Background(), url, &e); err != nil {
 		return EnergyMeterStats{}, err
 	}
 	return e, nil
 }
 
-func (em *EnergyMeter) Total() (EnergyTotal, error) {
-	url := fmt.Sprintf("%s/%s/get_total_energy", em.BaseURL, em.APIKey)
+func (c *Client) EnergyMeterTotal(baseURL string) (EnergyTotal, error) {
+	url := fmt.Sprintf("%s/00/get_total_energy", baseURL)
 	var et EnergyTotal
-	if err := em.get(context.Background(), url, &et); err != nil {
+	if err := c.get(context.Background(), url, &et); err != nil {
 		return EnergyTotal{}, err
 	}
 	return et, nil
 }
 
-func (em *EnergyMeter) get(ctx context.Context, url string, data any) error {
+func (c *Client) get(ctx context.Context, url string, data any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("fox: creating HTTP request: %w", err)
 	}
-	res, err := em.HTTPClient.Do(req)
+	res, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("fox: sending GET request: %w", err)
 	}
@@ -96,18 +103,18 @@ func (em *EnergyMeter) get(ctx context.Context, url string, data any) error {
 	return nil
 }
 
-// GetEnergyStats takes a string representing Meter's IP address
+// GetEnergyMeterStatus takes a string representing Meter's IP address
 // on a local network and returns current statistics or an error.
 //
-// It uses default Energy Meter client and default HTTP Client.
-func GetEnergyStats(ip string) (EnergyMeterStats, error) {
-	return NewEnergyMeter("http://" + ip).CurrentParameters()
+// It uses default Fox client and default HTTP Client.
+func GetEnergyMeterStatus(ip string) (EnergyMeterStats, error) {
+	return NewClient().EnergyMeterCurrentStatus("http://" + ip)
 }
 
 // GetEnergyTotal takes a string representing Meter's IP address
 // on a local network and returns total energy reading or an error.
 //
-// It uses default Energy Meter client and default HTTP Client.
+// It uses default Fox client and default HTTP Client.
 func GetEnergyTotal(ip string) (EnergyTotal, error) {
-	return NewEnergyMeter("http://" + ip).Total()
+	return NewClient().EnergyMeterTotal("http://" + ip)
 }
