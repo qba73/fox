@@ -5,6 +5,8 @@
 [![Tests](https://github.com/qba73/fox/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/qba73/fox/actions/workflows/test.yml)
 [![CodeQL](https://github.com/qba73/fox/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/qba73/fox/actions/workflows/github-code-scanning/codeql)
 [![Scorecard](https://github.com/qba73/fox/actions/workflows/scorecard.yml/badge.svg)](https://github.com/qba73/fox/actions/workflows/scorecard.yml)
+![Maintenance](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
+
 
 # fox
 
