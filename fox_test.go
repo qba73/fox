@@ -14,7 +14,7 @@ func TestEnergyMeterWithNoAPIKeyReadsCurrentWorkingParameters(t *testing.T) {
 
 	wantPath := "/00/get_current_parameters"
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testEnergyMeter := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != wantPath {
 			t.Errorf("invalid path:\n%s\n", cmp.Diff(wantPath, r.URL.Path))
 		}
@@ -22,12 +22,12 @@ func TestEnergyMeterWithNoAPIKeyReadsCurrentWorkingParameters(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(respBodyCurrentParameters))
 	}))
-	defer ts.Close()
+	defer testEnergyMeter.Close()
 
-	client := fox.NewClient()
-	client.HTTPClient = ts.Client()
+	clientMeter := fox.NewEnergyMeter(testEnergyMeter.URL)
+	clientMeter.HTTPClient = testEnergyMeter.Client()
 
-	got, err := client.EnergyMeterCurrentStatus(ts.URL)
+	got, err := clientMeter.CurrentReading()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestEnergyMeterWithNoAPIKeyReadsTotalEnergy(t *testing.T) {
 
 	wantPath := "/00/get_total_energy"
 
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testEnergyMeter := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != wantPath {
 			t.Errorf("invalid path:\n%s\n", cmp.Diff(wantPath, r.URL.Path))
 		}
@@ -61,12 +61,12 @@ func TestEnergyMeterWithNoAPIKeyReadsTotalEnergy(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(respBodyEnergyTotal))
 	}))
-	defer ts.Close()
+	defer testEnergyMeter.Close()
 
-	c := fox.NewClient()
-	c.HTTPClient = ts.Client()
+	meter := fox.NewEnergyMeter(testEnergyMeter.URL)
+	meter.HTTPClient = testEnergyMeter.Client()
 
-	got, err := c.EnergyMeterTotal(ts.URL)
+	got, err := meter.TotalEnergy()
 	if err != nil {
 		t.Fatal(err)
 	}
